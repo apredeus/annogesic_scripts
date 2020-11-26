@@ -2,9 +2,11 @@
 
 This repository mainly describes running [ANNOgesic](https://annogesic.readthedocs.io/en/latest/tutorial.html) for TSS annotation in bacterial genomes using dRNA-seq. In addition to TSS annotation, one can also do *great many things* with `ANNOgesic` - and there'll be few scripts describing this as well. 
 
-First of all, you need a machine with [Singularity](https://singularity.lbl.gov/) installed. You can't install it without the root access; if you don't have it on your cluster, ask your admin- or run this on a local workstation, because most `ANNOgesic` jobs don't require too much compute power (TSS calling definitely does not). 
+First of all, you need a machine with [Singularity](https://singularity.lbl.gov/) installed. You can't install it without the root access; if you don't have it on your cluster, ask your admin - or run this on a local workstation, because most `ANNOgesic` jobs don't require too much compute power (TSS calling definitely does not). 
 
 After this, follow `ANNOgesic` tutorial to understand the logic of the annotation process. To start, you'll need your genome assembly and annotation (see in **example_files** for the exact format of GFF), as well as strand-separated, non-normalized *wig* files from dRNA-seq and matching control RNA-seq experiments. 
+
+In this repository, I assume you do not use `ANNOgesic` alignment or annotation transfer tool. I've used `STAR` for alignment and pre-formatted NCBI *gff* annotations. 
 
 ## Wig file preparation 
 
@@ -15,7 +17,7 @@ Importantly, `ANNOgesic` requires a properly formatted *wig* file, and not the k
 ./make_proper_wig.pl sample1.bam - > sample1.minus.wig
 ```
 
-After this, just copy the wig files into the appropriate sub-directory of the `ANNOgesic`-generated directory structure. 
+After this, just copy the *wig* files into the appropriate sub-directory of the `ANNOgesic`-generated directory structure. 
 
 ## Original TSS calling workflow 
 
@@ -27,7 +29,7 @@ ANNOgesic/TSSpredator manual suggests the following processing sequence:
 * Re-run the TSS prediction using the optimized parameters;  
 * Do all the remaining downstream analysis `ANNOgesic` lets you do.
 
-## Simplified forkflow 
+## Simplified workflow 
 
 The suggested workflow above still missed a lot of TSS discoverable by "eye test", so I came up with much less labor-intensive method that generates decent results: 
 
@@ -47,7 +49,7 @@ grep -wF -f Db11.filt_master.tsv Db11_TSS.gff > Db11_TSS.filt.gff
 
 The `filter_master_table.sh` script is retaining the following TSS sites: 1) anything annotated as "primary"; 2) anything with > 100 reads mapped to the first nucleotide; 3) anything with > 50 reads mapped to the first nucleotide, and with *stepFactor* and *enrichmentFactor* of over 4.0. All these can be adjusted according to your needs.
 
-Ideally, you would also examine RNA-seq tracks (e.g. in JBrowse) together with "relaxed" and "filtered" TSS track, and select TSS to your liking. But this is a *mind-numbing work* and takes a lot of time and patience. 
+Ideally, you would also examine RNA-seq tracks (e.g. in JBrowse) together with "relaxed" and "filtered" TSS track, and select TSS to your liking. But this is *mind-numbing work* and takes a lot of time and patience. 
 
 ## Visualization
 
