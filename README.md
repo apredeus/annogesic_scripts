@@ -17,9 +17,9 @@ Importantly, `ANNOgesic` requires a properly formatted *wig* file, and not the k
 
 After this, just copy the wig files into the appropriate sub-directory of the `ANNOgesic`-generated directory structure. 
 
-## Suggested workflow 
+## Original TSS calling workflow 
 
-Overall processing is done as follows: 
+ANNOgesic/TSSpredator manual suggests the following processing sequence: 
 
 * Run TSS prediction with default settings; 
 * Curate a selection (~ 200kb) of predicted TSS: remove bad predictions, and *add missing good TSS sites*; 
@@ -29,13 +29,30 @@ Overall processing is done as follows:
 
 ## Simplified forkflow 
 
-The suggested workflow above missed a lot of TSS discoverable by "eye test", so I came up with much less labor intensive method that generates decent results: 
+The suggested workflow above still missed a lot of TSS discoverable by "eye test", so I came up with much less labor-intensive method that generates decent results: 
 
-* Run TSS prediction with relaxed settings; 
-* Filter the obtained TSS table using the expression values and primary/non-primary annotation.
+* Run TSS prediction with relaxed settings ("--enrichment_factor 1.0"); 
+* Filter the obtained TSS table using the expression values and primary/non-primary annotation. For this, first run the script generating the combined master table (here, **Db11** is the name of `ANNOgesic`-generated folder with the input and output): 
+
+```bash 
+./parse_master_tables.sh Db11 > Db11.master.tsv
+```
+
+After this, filter the obtained master table, and use the obtained file to filter the *gff* file: 
+
+```bash
+./filter_master_table.sh Db11.master.tsv > Db11.filt_master.tsv
+grep -wF -f Db11.filt_master.tsv Db11_TSS.gff > Db11_TSS.filt.gff
+```
+
+The `filter_master_table.sh` script is retaining the following TSS sites: 1) anything annotated as "primary"; 2) anything with > 100 reads mapped to the first nucleotide; 3) anything with > 50 reads mapped to the first nucleotide, and with *stepFactor* and *enrichmentFactor* of over 4.0. All these can be adjusted according to your needs.
 
 Ideally, you would also examine RNA-seq tracks (e.g. in JBrowse) together with "relaxed" and "filtered" TSS track, and select TSS to your liking. But this is a *mind-numbing work* and takes a lot of time and patience. 
 
 ## Visualization
 
-Predicted TSS files in *gff* format are easily visualized in JBrowse. 
+Predicted TSS files in *gff* format are easily visualized in JBrowse.
+
+## Full annotation
+
+An example of complete annotation (prediction of transcription start sites, processing sites, transcripts, terminators, UTRs, operons, promoters, and sRNAs) is given in `run_annogesic_all.sh`. You'll need a couple of additional databases, including *nt* blast database. 
